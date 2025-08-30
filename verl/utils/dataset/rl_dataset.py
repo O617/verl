@@ -208,7 +208,6 @@ class RLHFDataset(Dataset):
                         content_list.append({"type": "video"})
                     else:
                         content_list.append({"type": "text", "text": segment})
-                breakpoint()
                 message["content"] = content_list
 
         return messages
