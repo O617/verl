@@ -59,7 +59,11 @@ class NaiveRewardManager(AbstractRewardManager):
         reward_extra_info = defaultdict(list)
 
         already_print_data_sources = {}
-
+        ground_truth = None
+        data_source = None
+        extra_info = None
+        responses = []
+        prompts = []
         for i in range(len(data)):
             data_item = data[i]  # DataProtoItem
 
@@ -77,28 +81,30 @@ class NaiveRewardManager(AbstractRewardManager):
             # decode
             prompt_str = self.tokenizer.decode(valid_prompt_ids, skip_special_tokens=True)
             response_str = self.tokenizer.decode(valid_response_ids, skip_special_tokens=True)
+            # ground_truth = data_item.non_tensor_batch["reward_model"]["ground_truth"]
+            # data_source = data_item.non_tensor_batch[self.reward_fn_key]
+            # extra_info = data_item.non_tensor_batch.get("extra_info", {})
+            # num_turns = data_item.non_tensor_batch.get("__num_turns__", None)
+            # extra_info["num_turns"] = num_turns
+            prompts.append(prompt_str)
+            responses.append(response_str)
 
-            ground_truth = data_item.non_tensor_batch["reward_model"]["ground_truth"]
-            data_source = data_item.non_tensor_batch[self.reward_fn_key]
-            extra_info = data_item.non_tensor_batch.get("extra_info", {})
-            num_turns = data_item.non_tensor_batch.get("__num_turns__", None)
-            extra_info["num_turns"] = num_turns
+        score = self.compute_score(
+            data_source=data_source,
+            solution_str=responses,
+            ground_truth=ground_truth,
+            extra_info=extra_info,
+        )
 
-            score = self.compute_score(
-                data_source=data_source,
-                solution_str=response_str,
-                ground_truth=ground_truth,
-                extra_info=extra_info,
-            )
-
-            if isinstance(score, dict):
-                reward = score["score"]
-                # Store the information including original reward
-                for key, value in score.items():
-                    reward_extra_info[key].append(value)
-            else:
-                reward = score
-
+        for i in range(len(data)):
+            # if isinstance(score, dict):
+            #     reward = score["score"]
+            #     # Store the information including original reward
+            #     for key, value in score.items():
+            #         reward_extra_info[key].append(value)
+            # else:
+            #     reward = score
+            reward = score[i]
             reward_tensor[i, valid_response_length - 1] = reward
 
             if data_source not in already_print_data_sources:

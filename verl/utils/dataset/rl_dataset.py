@@ -208,7 +208,7 @@ class RLHFDataset(Dataset):
                         content_list.append({"type": "video"})
                     else:
                         content_list.append({"type": "text", "text": segment})
-
+                breakpoint()
                 message["content"] = content_list
 
         return messages
@@ -266,7 +266,7 @@ class RLHFDataset(Dataset):
 
         else:
             raw_prompt = self.tokenizer.apply_chat_template(
-                messages, add_generation_prompt=True, tokenize=False, **self.apply_chat_template_kwargs
+                [{"role": "user", "content": messages}], add_generation_prompt=True, tokenize=False, **self.apply_chat_template_kwargs
             )
             model_inputs = self.tokenizer(raw_prompt, return_tensors="pt", add_special_tokens=False)
             input_ids = model_inputs.pop("input_ids")
