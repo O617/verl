@@ -165,11 +165,21 @@ class RLHFDataset(Dataset):
             else:
 
                 def doc2len(doc) -> int:
-                    return len(
-                        tokenizer.apply_chat_template(
-                            doc[prompt_key], add_generation_prompt=True, **self.apply_chat_template_kwargs
+                    if "Llama" in  self.tokenizer.__str__():
+                        return len(
+                            tokenizer.apply_chat_template(
+                                [{"role": "user",
+                                 "content": doc[prompt_key]}], 
+                                add_generation_prompt=True, 
+                                **self.apply_chat_template_kwargs
+                            )
                         )
-                    )
+                    else:
+                        return len(
+                            tokenizer.apply_chat_template(
+                                doc[prompt_key], add_generation_prompt=True, **self.apply_chat_template_kwargs
+                            )
+                        )
 
             dataframe = dataframe.filter(
                 lambda doc: doc2len(doc) <= self.max_prompt_length,
@@ -209,6 +219,8 @@ class RLHFDataset(Dataset):
                     else:
                         content_list.append({"type": "text", "text": segment})
                 message["content"] = content_list
+                if "Llama" in self.tokenizer.__str__():
+                    message["role"] = "user"
 
         return messages
 

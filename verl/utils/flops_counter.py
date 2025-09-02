@@ -144,7 +144,8 @@ class FlopsCounter:
         num_attention_heads = self.config.num_attention_heads
         intermediate_size = self.config.intermediate_size
 
-        head_dim = getattr(self.config, "head_dim", self.config.hidden_size // self.config.num_attention_heads)
+        # head_dim = getattr(self.config, "head_dim", self.config.hidden_size // self.config.num_attention_heads)
+        head_dim = self.config.hidden_size // self.config.num_attention_heads
         q_size = num_attention_heads * head_dim
         k_size = num_key_value_heads * head_dim
         v_size = num_key_value_heads * head_dim
